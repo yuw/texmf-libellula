@@ -1,0 +1,339 @@
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{libellula}
+   [2015/03/03 v0.0 style file ``libellula.sty''^^J
+    by Yuwsuke KIEDA]
+
+\@ifpackageloaded{keyval}{\relax}{\RequirePackage{keyval}}
+\@ifpackageloaded{xcolor}{\relax}{\RequirePackage{xcolor}}
+
+\newcount\hour
+\newcount\minute
+
+\hour\time \divide\hour by 60\relax
+\@tempcnta\hour \multiply\@tempcnta 60\relax
+\minute\time \advance\minute-\@tempcnta
+
+\newif\ifcrop                  \cropfalse
+\newif\ifcropdate              \cropdatefalse
+\newif\if@trimbox@             \@trimbox@false
+\newif\if@textbody@            \@textbody@false
+\newif\if@compositorscomment@  \@compositorscomment@false
+\newif\if@cropcolor            \@cropcolorfalse
+
+\DeclareOption{crop}{\croptrue\@trimbox@false\@textbody@false}
+\DeclareOption{nocrop}{\cropfalse\cropdatefalse\@trimbox@false}
+\DeclareOption{trimbox}{\@trimbox@true}
+\DeclareOption{notrimbox}{\@trimbox@false}
+\DeclareOption{textbody}{\@textbody@true}
+\DeclareOption{notextbody}{\@textbody@false}
+\DeclareOption{comment}{\@compositorscomment@true}
+\DeclareOption{nocomment}{\@compositorscomment@false}
+\DeclareOption*{\libellula@setkey}
+\def\libellula@setkey{\expandafter\@temp@libellula@setkey\expandafter{\CurrentOption}}
+\def\@temp@libellula@setkey{\setkeys{libellula}}
+\define@key{libellula}{cropcolor}{\@cropcolortrue\def\crop@color{#1}}
+
+\ExecuteOptions{crop,trimbox,textbody,comment}
+\ProcessOptions
+
+\def\@temp@crop@cmyk@cmyk{cmyk}
+\def\@temp@crop@cmyk@cyk{cyk}
+\def\@temp@crop@cmyk@cmk{cmk}
+\def\@temp@crop@cmyk@myk{myk}
+\def\@temp@crop@cmyk@ck{ck}
+\def\@temp@crop@cmyk@mk{mk}
+\def\@temp@crop@cmyk@yk{yk}
+\def\@@crop@cmyk{%
+  \ifx\crop@color\@temp@crop@cmyk@cmyk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{1,1,1,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@cmk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{1,1,0,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@cyk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{1,0,1,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@myk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{0,1,1,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@ck
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{1,0,0,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@mk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{0,1,0,1}}}{\relax}
+  \fi
+  \ifx\crop@color\@temp@crop@cmyk@yk
+    \@ifpackageloaded{xcolor}{\def\@crop@cmyk{\color[cmyk]{0,0,1,1}}}{\relax}
+  \fi
+}
+\@@crop@cmyk
+\@ifundefined{@crop@cmyk}{\let\@crop@cmyk\relax}{\relax}
+
+\newdimen\@cropwidth
+\setlength{\@cropwidth}{.1mm}
+\newbox\@TL\newbox\@Tl
+\newbox\@TC
+\newbox\@TR\newbox\@Tr
+\newbox\@BL\newbox\@Bl
+\newbox\@BC
+\newbox\@BR\newbox\@Br
+\newbox\@CL
+\newbox\@CR
+\newbox\guide@trimbox@v
+\newbox\guide@trimbox@h
+\newbox\@guide@textbody
+\font\@bannerfont=cmtt9
+\newtoks\@bannertoken
+\@bannertoken{}
+\def\compositorscomment#1{\def\@compositorscomment{#1}}
+\def\makecroplineboxs{%
+  \setbox\@TL\hb@xt@\z@{\hss
+    \vrule width13mm height\@cropwidth depth\z@
+    \vrule height10mm width\@cropwidth depth\z@}%
+  \setbox\@Tl\hb@xt@\z@{\hss
+    \vrule width10mm height\@cropwidth depth\z@
+    \vrule height13mm width\@cropwidth depth\z@}%
+  \setbox\@TC\hbox{%
+    \vrule width10mm height\@cropwidth depth\z@
+    \vrule height10mm width\@cropwidth depth\z@
+    \vrule width10mm height\@cropwidth depth\z@}%
+  \setbox\@TR\hb@xt@\z@{%
+    \vrule height10mm width\@cropwidth depth\z@
+    \vrule width13mm height\@cropwidth depth\z@\hss}%
+  \setbox\@Tr\hb@xt@\z@{%
+    \vrule height13mm width\@cropwidth depth\z@
+    \vrule width10mm height\@cropwidth depth\z@\hss}%
+  \setbox\@BL\hb@xt@\z@{\hss
+    \vrule width13mm depth\@cropwidth height\z@
+    \vrule depth10mm width\@cropwidth height\z@}%
+  \setbox\@Bl\hb@xt@\z@{\hss
+    \vrule width10mm depth\@cropwidth height\z@
+    \vrule depth13mm width\@cropwidth height\z@}%
+  \setbox\@BC\hbox{%
+    \vrule width10mm depth\@cropwidth height\z@
+    \vrule depth10mm width\@cropwidth height\z@
+    \vrule width10mm depth\@cropwidth height\z@}%
+  \setbox\@BR\hb@xt@\z@{%
+    \vrule depth10mm width\@cropwidth height\z@
+    \vrule width13mm depth\@cropwidth height\z@\hss}%
+  \setbox\@Br\hb@xt@\z@{%
+    \vrule depth13mm width\@cropwidth height\z@
+    \vrule width10mm depth\@cropwidth height\z@\hss}%
+  \setbox\@CL\hb@xt@\z@{\hss
+    \vrule width10mm height.5\@cropwidth depth.5\@cropwidth
+    \vrule height10mm depth10mm width\@cropwidth}%
+  \setbox\@CR\hb@xt@\z@{%
+    \vrule height10mm depth10mm width\@cropwidth
+    \vrule height.5\@cropwidth depth.5\@cropwidth width10mm\hss}%
+  \setbox\guide@trimbox@v \vbox to\z@{%
+    \vss\hb@xt@\z@{\hss\vrule width\@cropwidth height\paperheight\hss}\vss}%
+  \setbox\guide@trimbox@h \vbox to\z@{%
+    \vss\hb@xt@\z@{\hss\vrule width\paperwidth height\@cropwidth\hss}\vss}%
+  \setbox\@guide@textbody \vbox to\textheight{%
+    \dimen@\@cropwidth
+    \hrule\@height\dimen@\@width
+    \columnwidth
+    \kern-\dimen@
+    \hb@xt@\columnwidth{%
+      \vrule\@height\textheight\@width\dimen@
+      \kern-\dimen@
+      \hfil
+      \kern-\dimen@
+      \vrule\@height\textheight\@width\dimen@}%
+    \kern-\dimen@
+    \hrule\@height\dimen@\@width
+    \columnwidth}%
+}
+
+\let\@textbody@hack\relax
+
+\newdimen\@mediabox@height
+\newdimen\@mediabox@width
+\newdimen\@@topmargin
+
+\def\@output@compositorscomment{%
+  \if@compositorscomment@
+  \vbox to\z@{\vss
+      \sffamily\@ifundefined{gtfamily}\relax\gtfamily\normalcolor%
+      \@ifundefined{@compositorscomment}{\relax}{\@crop@cmyk%
+        \leavevmode\raise10mm\hbox{\@compositorscomment}}%
+      \hrule \@height\z@}%
+  \fi}
+\def\@output@cropdate{%
+  \lower10mm\vbox to\z@{\hbox{\@bannerfont\the\@bannertoken}\vss}}
+\def\@outputcrop{%
+  \ifcrop
+    \vbox to\z@{\kern-13mm\relax
+      \moveleft3mm\vbox to\@mediabox@height{%
+        \hb@xt@\@mediabox@width{\@crop@cmyk%
+          \hskip3mm\relax
+          \copy\@TL\leavevmode\rlap{\hskip3mm\@output@compositorscomment}%
+          \hfill\copy\@TC\hfill\copy\@TR
+          \hskip3mm}%
+        \kern-10mm
+        \hb@xt@\@mediabox@width{\@crop@cmyk%
+          \ifcrop\copy\@Tl\hfill\fi
+          {\normalcolor\if@trimbox@\copy\guide@trimbox@h\hfill\fi}%
+          \ifcrop\copy\@Tr\fi}%
+  \fi
+  \@textbody@hack%
+  \if@textbody@
+    \vbox to\z@{%
+      \if@twocolumn\else\columnwidth\textwidth\fi
+      \ifcrop\dimen@ 1in\relax\else\dimen@\headsep\relax\fi
+      \advance\dimen@\topmargin
+      \advance\dimen@\headheight
+      \ifcrop\advance\dimen@\headsep\fi
+      \kern\dimen@
+      \ifcrop\hskip3mm\relax\fi
+      \hskip\@themargin
+      \ht\@guide@textbody\z@
+      \dp\@guide@textbody\z@
+      \wd\@guide@textbody\z@
+      \copy\@guide@textbody\vss
+      \if@twocolumn
+        \ifcrop\dimen@ 1in\relax
+          \advance\dimen@\topmargin
+          \advance\dimen@\headheight
+          \advance\dimen@\headsep\fi
+        \kern\dimen@
+        \ifcrop\hskip3mm\fi
+        \hskip\@themargin
+        \ht\@guide@textbody\z@
+        \dp\@guide@textbody\z@
+        \wd\@guide@textbody\z@
+        \rlap{\hskip\columnwidth\hskip\columnsep\copy\@guide@textbody}\vss
+      \fi}%
+  \fi
+  \vfill
+  \ifcrop
+    \hb@xt@\@mediabox@width{\@crop@cmyk%
+      \copy\@CL{\normalcolor\if@trimbox@\hskip3mm\copy\guide@trimbox@v\fi}%
+      \ifodd\c@page\hskip\oddsidemargin
+      \else\hskip\evensidemargin\fi
+      \hfill
+      {\normalcolor\if@trimbox@\copy\guide@trimbox@v\hskip3mm\fi}%
+      \copy\@CR}%
+    \vfill
+    \hb@xt@\@mediabox@width{\@crop@cmyk%
+      \copy\@Bl\hfill
+      {\normalcolor\if@trimbox@\copy\guide@trimbox@h\hfill\fi}%
+      \copy\@Br}%
+    \kern-10mm
+    \hb@xt@\@mediabox@width{\@crop@cmyk%
+      \hskip3mm\relax
+      \copy\@BL\hfill\copy\@BC\hfill\copy\@BR%
+      \llap{\@output@cropdate\hskip3mm}\hskip3mm}%
+    }\vss
+  }\fi%
+}
+
+\def\@outputpage{%
+\begingroup % the \endgroup is put in by \aftergroup
+  \let \protect \noexpand
+  \@resetactivechars
+  \global\let\@@if@newlist\if@newlist
+  \global\@newlistfalse
+  \@parboxrestore
+  \makecroplineboxs
+  \shipout\vbox{%
+    \set@typeset@protect
+    \aftergroup\endgroup
+    \aftergroup\set@typeset@protect
+    \if@specialpage
+      \global\@specialpagefalse\@nameuse{ps@\@specialstyle}%
+    \fi
+    \if@twoside
+      \ifodd\count\z@ \let\@thehead\@oddhead \let\@thefoot\@oddfoot
+      \else \let\@thehead\@evenhead
+        \let\@thefoot\@evenfoot
+    \fi\fi
+    \@@topmargin\topmargin
+    \ifcrop
+      \@mediabox@width\paperwidth \advance\@mediabox@width 6mm\relax
+      \@mediabox@height\paperheight \advance\@mediabox@height 16mm\relax
+      \advance\@@topmargin 1in\relax \advance\@themargin 1in\relax
+    \fi
+    \reset@font
+    \normalsize
+    \normalsfcodes
+    \let\label\@gobble
+    \let\index\@gobble
+    \let\glossary\@gobble
+    \baselineskip\z@skip \lineskip\z@skip \lineskiplimit\z@
+    \@begindvi
+    \@outputcrop
+    \vskip \@@topmargin
+    \moveright\@themargin\vbox{%
+      \setbox\@tempboxa \vbox to\headheight{%
+        \vfil
+        \color@hbox
+          \normalcolor
+          \hb@xt@\textwidth{\@thehead}%
+        \color@endbox
+      }%
+      \dp\@tempboxa \z@
+      \box\@tempboxa
+      \vskip \headsep
+      \box\@outputbox
+      \baselineskip \footskip
+      \color@hbox
+        \normalcolor
+        \hb@xt@\textwidth{\@thefoot}%
+      \color@endbox
+    }%
+  }%
+  \global\let\if@newlist\@@if@newlist
+  \global \@colht \textheight
+  \stepcounter{page}%
+  \let\firstmark\botmark
+}
+
+\ifcrop
+\@bannertoken{%
+  \jobname:\space\number\year-\two@digits\month-\two@digits\day\space%
+  (\two@digits\hour:\two@digits\minute)}
+\fi
+
+\newdimen\voffset@extra
+\newdimen\hoffset@extra
+\newdimen\@mediabox@width
+\newdimen\@mediabox@height
+\@mediabox@width=\paperwidth
+\@mediabox@height=\paperheight
+\ifcrop
+  \@mediabox@width  210mm
+  \@mediabox@height 297mm
+  \@ifundefined{pdfoutput}{%
+    \AtBeginDvi{\special{papersize=\the\@mediabox@width,\the\@mediabox@height}}}{%
+    \ifnum\pdfoutput=0
+      \AtBeginDvi{\special{papersize=\the\@mediabox@width,\the\@mediabox@height}}
+    \else
+      \pdfpagewidth \@mediabox@width \pdfpageheight \@mediabox@height
+    \fi}
+  \hoffset@extra=\@mediabox@width
+  \advance\hoffset@extra-\paperwidth
+  \voffset@extra=\@mediabox@height
+  \advance\voffset@extra-\paperheight
+  \advance \hoffset@extra -2in
+  \advance \voffset@extra -2in
+  \advance \voffset .5\voffset@extra
+  \advance \hoffset .5\hoffset@extra
+\else
+  \@ifundefined{pdfoutput}{%
+    \AtBeginDvi{\special{papersize=\the\@mediabox@width,\the\@mediabox@height}}}{%
+    \ifnum\pdfoutput=0
+      \AtBeginDvi{\special{papersize=\the\@mediabox@width,\the\@mediabox@height}}
+    \else
+      \pdfpagewidth \@mediabox@width \pdfpageheight \@mediabox@height
+    \fi}
+\fi
+
+\@ifpackageloaded{pdfx}{\advance\voffset-246.62bp}{\relax}
+\pdfpageattr{%
+/MediaBox [0.00 0.00 595.28 841.89]% A4
+/BleedBox [79.37 114.80 515.91 727.09]% A5 + 3mm
+/TrimBox  [87.87 123.31 507.41 718.58]% A5
+}
+
+\endinput
